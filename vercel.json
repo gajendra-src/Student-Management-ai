@@ -2,19 +2,5 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "env": {
-    "OPENAI_API_KEY": "@openai-api-key",
-    "JIRA_BASE_URL": "@jira-base-url",
-    "JIRA_EMAIL": "@jira-email",
-    "JIRA_API_TOKEN": "@jira-api-token",
-    "JIRA_PROJECT_KEY": "@jira-project-key",
-    "GITHUB_TOKEN": "@github-token",
-    "VERCEL_TOKEN": "@vercel-token",
-    "VERCEL_PROJECT_ID": "@vercel-project-id",
-    "VERCEL_ORG_ID": "@vercel-org-id",
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key"
-  }
+  "installCommand": "npm install"
 }
