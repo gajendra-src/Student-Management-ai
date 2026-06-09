@@ -1,6 +1,7 @@
 import asyncio
 from langchain_openai import ChatOpenAI
 from state import AgentState
+from tools.logger import jira_log
 
 _llm = None
 
@@ -15,19 +16,19 @@ def _get_llm() -> ChatOpenAI:
 BACKEND_PROMPT = """You are an expert Next.js 14 API route developer. Generate production-ready TypeScript.
 
 RULES — MUST FOLLOW:
-1. Always import getDb: `import {{ getDb }} from '@/lib/db'`
+1. Always import getDb: `import { getDb } from '@/lib/db'`
 2. EXACT data model — snake_case ONLY:
-   - Student: {{ id: string, name: string, email: string, age: number, created_at: string }}
-   - Course: {{ id: string, name: string, description: string, credits: number, created_at: string }}
-   - Grade: {{ id: string, student_id: string, course_id: string, grade: string, score: number, semester: string, created_at: string }}
+   - Student: { id: string, name: string, email: string, age: number, created_at: string }
+   - Course: { id: string, name: string, description: string, credits: number, created_at: string }
+   - Grade: { id: string, student_id: string, course_id: string, grade: string, score: number, semester: string, created_at: string }
    CRITICAL: student_id (NOT studentId), course_id (NOT courseId) — camelCase is WRONG
-3. db.grades.create() requires: {{ student_id, course_id, grade, score, semester }}
+3. db.grades.create() requires: { student_id, course_id, grade, score, semester }
 4. db has NO .escape() method — NEVER call db.escape()
-5. getDb() returns: {{ students, courses, grades }} — no other tables exist
-6. For attendance: import {{ attendanceStore }} from '@/lib/attendance'
+5. getDb() returns: { students, courses, grades } — no other tables exist
+6. For attendance: import { attendanceStore } from '@/lib/attendance'
 7. Next.js 14 route format:
-   export async function GET(request: Request) {{ ... }}
-   export async function POST(request: Request) {{ ... }}
+   export async function GET(request: Request) { ... }
+   export async function POST(request: Request) { ... }
 8. Return NextResponse.json(data) for responses
 9. Return ONLY the file content — no markdown, no explanations
 """
@@ -72,6 +73,9 @@ async def backend_agent_node(state: AgentState) -> AgentState:
         print("  ⚠️  No backend files to generate.")
         return state
 
+    key = (ticket or {}).get("key")
+    await jira_log(key, f"⚙️ BackendAgent Started\nFiles: {', '.join(backend_files)}")
+
     tasks = []
     for f in backend_files:
         print(f"  🔨 Generating: {f}")
@@ -85,4 +89,5 @@ async def backend_agent_node(state: AgentState) -> AgentState:
     for f in new_files:
         merged[f["path"]] = f
 
+    await jira_log(key, f"⚙️ BackendAgent Completed\nGenerated: {', '.join(f['path'] for f in new_files)}")
     return {**state, "generated_files": list(merged.values())}

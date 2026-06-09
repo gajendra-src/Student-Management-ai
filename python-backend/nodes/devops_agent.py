@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from tools.github_tool import push_to_github
 from tools.vercel import trigger_deploy, get_latest_deploy_url
 from tools.jira import post_comment, close_ticket
+from tools.logger import jira_log
 from state import AgentState
 
 _llm = None
@@ -110,6 +111,8 @@ async def devops_agent_node(state: AgentState) -> AgentState:
     summary = ticket.get("fields", {}).get("summary", key)
     commit_msg = f"feat({key}): {summary}"
 
+    await jira_log(key, f"🚀 DevOpsAgent Started\nCommit: {commit_msg}")
+
     # ── STEP 1: Write files to disk ──────────────────────────────────
     _write_files(generated_files)
 
@@ -134,10 +137,13 @@ async def devops_agent_node(state: AgentState) -> AgentState:
         print(f"\n  ❌ Build still failing after {MAX_BUILD_RETRIES} fix attempts — aborting push.")
         for err in build_errors[:5]:
             print(f"     {err}")
+        error_summary = build_errors[0][:200]
+        await jira_log(key, f"❌ Build Failed after {MAX_BUILD_RETRIES} attempts\n{error_summary}")
         await _close_safely(key, None, f"Build failed after {MAX_BUILD_RETRIES} fix attempts: {build_errors[0]}", test_score)
         return {**state, "deploy_url": None, "error": f"Build failed: {build_errors[0]}",
                 "generated_files": generated_files}
     else:
+        await jira_log(key, "✅ Build Check Passed")
         print("  ✅ Build check PASSED — pushing to main...")
 
     # ── STEP 3: Commit and push directly to main ──────────────────────
@@ -146,16 +152,18 @@ async def devops_agent_node(state: AgentState) -> AgentState:
         print(f"  ✅ Pushed commit to main: {commit_msg[:60]}")
     except Exception as e:
         print(f"  ❌ GitHub push failed: {e}")
+        await jira_log(key, f"❌ GitHub Push Failed\n{str(e)[:200]}")
         await _close_safely(key, None, f"Deploy failed (git push): {e}", test_score)
         return {**state, "deploy_url": None, "error": str(e)}
 
-    # ── STEP 4: Vercel deploys automatically from main push ───────────
+    # ── STEP 4: Vercel deploy ─────────────────────────────────────────
     deploy_url: str | None = None
     try:
-        await asyncio.sleep(3)  # give Vercel a moment to pick up the push
+        await asyncio.sleep(3)
         deploy_url = await get_latest_deploy_url()
         if deploy_url:
             print(f"  ✅ Vercel deploy triggered: {deploy_url}")
+            await jira_log(key, f"✅ Deployment Successful\nURL: {deploy_url}")
     except Exception as e:
         print(f"  ⚠️  Could not fetch Vercel URL: {e}")
 

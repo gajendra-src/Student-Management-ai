@@ -1,6 +1,7 @@
 import asyncio
 from langchain_openai import ChatOpenAI
 from state import AgentState
+from tools.logger import jira_log
 
 _llm = None
 
@@ -17,8 +18,11 @@ async def fix_agent_node(state: AgentState) -> AgentState:
     attempt = retry_count + 1
     print(f"\n🔧 NODE: fixAgent — fixing issues (attempt {attempt}/3)...")
 
+    key = (state.get("current_ticket") or {}).get("key")
     test_issues = state.get("test_issues") or []
     generated_files = list(state.get("generated_files") or [])
+
+    await jira_log(key, f"🔧 FixAgent Started — Retry #{attempt}/3\nFixing {len(test_issues)} issue(s)")
 
     if not test_issues:
         print("  ✅ No issues to fix.")
@@ -77,4 +81,6 @@ Return ONLY the complete corrected file content. No markdown code blocks."""
         except Exception as e:
             print(f"  ❌ Failed to fix {file_path}: {e}")
 
+    fixed_paths = list(issues_by_file.keys())
+    await jira_log(key, f"🔧 FixAgent Completed — Retry #{attempt}\nFixed files: {', '.join(fixed_paths)}")
     return {**state, "generated_files": new_files, "retry_count": attempt}

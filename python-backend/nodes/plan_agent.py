@@ -1,6 +1,7 @@
 import json
 from langchain_openai import ChatOpenAI
 from state import AgentState
+from tools.logger import jira_log
 
 _llm = None
 
@@ -20,8 +21,11 @@ async def plan_agent_node(state: AgentState) -> AgentState:
         print("  ⚠️  No current ticket — skipping.")
         return state
 
+    key = ticket["key"]
     summary = ticket.get("fields", {}).get("summary", "")
     description = ticket.get("fields", {}).get("description", "") or ""
+
+    await jira_log(key, "🧠 PlanAgent Started")
 
     prompt = f"""You are a senior software architect planning features for a Next.js 14 student management system.
 
@@ -60,11 +64,15 @@ Rules:
             content = content.removeprefix(prefix)
         content = content.removesuffix("```").strip()
         plan = json.loads(content)
-        print(f"  ✅ Plan: {plan['workType']} — {len(plan.get('files', []))} file(s) to build")
-        for f in plan.get("files", []):
+        work_type = plan.get("workType", "frontend")
+        files = plan.get("files", [])
+        print(f"  ✅ Plan: {work_type} — {len(files)} file(s) to build")
+        for f in files:
             print(f"    - {f}")
+        await jira_log(key, f"🧠 PlanAgent Completed\nType: {work_type}\nFiles: {', '.join(files)}")
         return {**state, "plan": plan}
     except Exception as e:
         print(f"  ❌ Plan failed: {e}")
+        await jira_log(key, f"❌ PlanAgent Failed\nError: {e}")
         fallback = {"workType": "frontend", "files": [], "description": str(e)}
         return {**state, "plan": fallback, "error": str(e)}

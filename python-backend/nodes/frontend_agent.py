@@ -1,6 +1,7 @@
 import asyncio
 from langchain_openai import ChatOpenAI
 from state import AgentState
+from tools.logger import jira_log
 
 _llm = None
 
@@ -19,7 +20,7 @@ RULES — MUST FOLLOW:
    Server components and pages that just fetch data do NOT need 'use client'
 2. CSS import in layout: use './globals.css' (relative), never '@/styles/globals.css'
 3. DataTable import: `import DataTable from '@/components/DataTable'`
-   columns type: Array<{{ key: string; label: string; render?: (value: any, row: any) => React.ReactNode }}>
+   columns type: Array<{ key: string; label: string; render?: (value: any, row: any) => React.ReactNode }>
    NOT plain strings — always objects with key and label
 4. Link component: <Link href="/path" className="...">Text</Link>
    NEVER nest <a> inside <Link>
@@ -29,7 +30,7 @@ RULES — MUST FOLLOW:
    CORRECT: bg-green-400, bg-green-500, bg-blue-500, bg-red-500, text-white
    WRONG: bg-light-green, bg-dark-blue, bg-lightgreen — these do NOT exist in Tailwind
    Full colour scale: 50,100,200,300,400,500,600,700,800,900 (e.g. bg-green-300 = light green)
-7. FORBIDDEN imports — these do not exist:
+8. FORBIDDEN imports — these do not exist:
    - '@/lib/api'
    - '@/lib/csvParser'
    - '@/components/Button'
@@ -37,21 +38,21 @@ RULES — MUST FOLLOW:
    - 'date-fns'
    - '@heroicons/react'
    - '@headlessui/react'
-8. Available imports:
-   - `import {{ getDb }} from '@/lib/db'` — server components only
-   - `import {{ attendanceStore }} from '@/lib/attendance'` — for attendance data
+9. Available imports:
+   - `import { getDb } from '@/lib/db'` — server components only
+   - `import { attendanceStore } from '@/lib/attendance'` — for attendance data
    - Tailwind CSS classes for all styling
-9. Server pages that call getDb() or attendanceStore MUST start with:
-   export const dynamic = 'force-dynamic';
-   This prevents Vercel build failures (prerender error during next build)
-10. Return ONLY the file content — no markdown code blocks, no explanations
+10. Server pages that call getDb() or attendanceStore MUST start with:
+    export const dynamic = 'force-dynamic';
+    This prevents Vercel build failures (prerender error during next build)
+11. Return ONLY the file content — no markdown code blocks, no explanations
 
 Project data model:
-- Student: {{ id, name, email, age, created_at }}
-- Course: {{ id, name, description, credits, created_at }}
-- Grade: {{ id, student_id, course_id, grade, score, semester, created_at }}
+- Student: { id, name, email, age, created_at }
+- Course: { id, name, description, credits, created_at }
+- Grade: { id, student_id, course_id, grade, score, semester, created_at }
   CRITICAL: student_id (NOT studentId), course_id (NOT courseId)
-- getDb() returns: {{ students, courses, grades }} — no other tables
+- getDb() returns: { students, courses, grades } — no other tables
 """
 
 
@@ -85,7 +86,6 @@ async def frontend_agent_node(state: AgentState) -> AgentState:
     plan_desc = plan.get("description", "")
     work_type = plan.get("workType", "fullstack")
 
-    # Only generate frontend files
     all_files = plan.get("files", [])
     frontend_files = [
         f for f in all_files
@@ -96,6 +96,9 @@ async def frontend_agent_node(state: AgentState) -> AgentState:
     if not frontend_files:
         print("  ⚠️  No frontend files to generate.")
         return state
+
+    key = (ticket or {}).get("key")
+    await jira_log(key, f"🎨 FrontendAgent Started\nFiles: {', '.join(frontend_files)}")
 
     tasks = []
     for f in frontend_files:
@@ -110,4 +113,5 @@ async def frontend_agent_node(state: AgentState) -> AgentState:
     for f in new_files:
         merged[f["path"]] = f
 
+    await jira_log(key, f"🎨 FrontendAgent Completed\nGenerated: {', '.join(f['path'] for f in new_files)}")
     return {**state, "generated_files": list(merged.values())}

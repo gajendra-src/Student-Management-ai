@@ -1,6 +1,7 @@
 import json
 from langchain_openai import ChatOpenAI
 from state import AgentState
+from tools.logger import jira_log
 
 _llm = None
 PASS_THRESHOLD = 80
@@ -16,10 +17,13 @@ def _get_llm() -> ChatOpenAI:
 async def test_agent_node(state: AgentState) -> AgentState:
     print("\n🧪 NODE: testAgent — reviewing generated code...")
     generated_files = state.get("generated_files") or []
+    key = (state.get("current_ticket") or {}).get("key")
 
     if not generated_files:
         print("  ⚠️  No files to test.")
         return {**state, "test_score": 100, "test_issues": []}
+
+    await jira_log(key, "🧪 TestAgent Started")
 
     files_content = "\n\n".join(
         f"=== {f['path']} ===\n{f['content']}" for f in generated_files
@@ -68,14 +72,24 @@ Score guide: 100=perfect, 80+=minor issues only, <80=has errors that need fixing
         issues = result.get("issues", [])
         summary = result.get("summary", "")
 
-        status = "✅ PASS" if score >= PASS_THRESHOLD else "❌ FAIL"
+        passed = score >= PASS_THRESHOLD
+        status = "✅ PASS" if passed else "❌ FAIL"
         print(f"  {status} Score: {score}/100 — {summary}")
         if issues:
             print(f"  Issues ({len(issues)}):")
             for issue in issues:
                 print(f"    - [{issue.get('file', '?')}] {issue.get('issue', '')}")
 
+        issue_lines = "\n".join(
+            f"  • [{i.get('file','?')}] {i.get('issue','')}" for i in issues
+        )
+        jira_msg = f"🧪 TestAgent Completed\nScore: {score}/100 — {status}\n{summary}"
+        if issue_lines:
+            jira_msg += f"\n\nIssues:\n{issue_lines}"
+        await jira_log(key, jira_msg)
+
         return {**state, "test_score": score, "test_issues": issues}
     except Exception as e:
         print(f"  ❌ Test agent failed: {e}")
+        await jira_log(key, f"❌ TestAgent Failed\nError: {e}")
         return {**state, "test_score": 0, "test_issues": []}
