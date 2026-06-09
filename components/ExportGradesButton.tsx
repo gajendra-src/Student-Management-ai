@@ -1,16 +1,24 @@
-"use client";
+'use client';
 
-import React, { useState } from 'react';
-import { fetchGradesData, exportToCSV } from '../utils/gradesUtils'; // Ensure these functions are correctly defined in the specified path
+import { useState } from 'react';
 
-const ExportGradesButton: React.FC = () => {
+export default function ExportGradesButton() {
   const [loading, setLoading] = useState(false);
 
   const handleExport = async () => {
     setLoading(true);
     try {
-      const data = await fetchGradesData();
-      exportToCSV(data);
+      const res = await fetch('/api/grades/export');
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'grades.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting grades:', error);
     } finally {
@@ -21,14 +29,10 @@ const ExportGradesButton: React.FC = () => {
   return (
     <button
       onClick={handleExport}
-      className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-        loading ? 'opacity-50 cursor-not-allowed' : ''
-      }`}
       disabled={loading}
+      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
     >
       {loading ? 'Exporting...' : 'Export Grades to CSV'}
     </button>
   );
-};
-
-export default ExportGradesButton;
+}

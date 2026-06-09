@@ -1,75 +1,43 @@
-import React, { FC } from 'react';
-import { fetchGrades, fetchStudents, fetchCourses } from '@/lib/api';
-import { parseToCSV } from '@/lib/csvParser';
-import { Button } from '@/components/Button';
+import { getDb } from '@/lib/db';
+import DataTable from '@/components/DataTable';
 
-interface Grade {
-  // Define the structure of a grade object
-}
+export default async function GradesPage() {
+  const db = getDb();
+  const [grades, students, courses] = await Promise.all([
+    db.grades.getAll(),
+    db.students.getAll(),
+    db.courses.getAll(),
+  ]);
 
-interface Student {
-  // Define the structure of a student object
-}
+  const data = grades.map((grade) => ({
+    id: grade.id,
+    studentName: students.find((s) => s.id === grade.student_id)?.name ?? 'Unknown',
+    courseName: courses.find((c) => c.id === grade.course_id)?.name ?? 'Unknown',
+    grade: grade.grade,
+    score: grade.score,
+    semester: grade.semester,
+  }));
 
-interface Course {
-  // Define the structure of a course object
-}
-
-const GradesPage: FC = () => {
-  const [grades, setGrades] = React.useState<Grade[]>([]);
-  const [students, setStudents] = React.useState<Student[]>([]);
-  const [courses, setCourses] = React.useState<Course[]>([]);
-
-  React.useEffect(() => {
-    const fetchData = async () => {
-      const [gradesData, studentsData, coursesData] = await Promise.all([
-        fetchGrades(),
-        fetchStudents(),
-        fetchCourses(),
-      ]);
-      setGrades(gradesData);
-      setStudents(studentsData);
-      setCourses(coursesData);
-    };
-    fetchData();
-  }, []);
-
-  const sanitizeData = (data: string): string => {
-    return data.replace(/"/g, '""');
-  };
-
-  const exportToCSV = () => {
-    const sanitizedGrades = grades.map(grade => ({
-      ...grade,
-      // Sanitize each field as necessary
-    }));
-    const sanitizedStudents = students.map(student => ({
-      ...student,
-      // Sanitize each field as necessary
-    }));
-    const sanitizedCourses = courses.map(course => ({
-      ...course,
-      // Sanitize each field as necessary
-    }));
-    const csvData = parseToCSV(sanitizedGrades, sanitizedStudents, sanitizedCourses);
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'grades.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const columns = [
+    { key: 'studentName', label: 'Student' },
+    { key: 'courseName', label: 'Course' },
+    { key: 'grade', label: 'Grade' },
+    { key: 'score', label: 'Score' },
+    { key: 'semester', label: 'Semester' },
+  ];
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Grades</h1>
-      <Button onClick={exportToCSV} className="bg-blue-500 text-white px-4 py-2 rounded">
-        Export Grades as CSV
-      </Button>
+    <div className="container mx-auto p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Grades</h1>
+        <a
+          href="/api/grades/export"
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+        >
+          Export CSV
+        </a>
+      </div>
+      <DataTable columns={columns} data={data} emptyMessage="No grades found." />
     </div>
   );
-};
-
-export default GradesPage;
+}

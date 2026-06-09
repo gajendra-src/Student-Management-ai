@@ -4,18 +4,26 @@ import { getDb } from '@/lib/db';
 export async function GET(req: NextRequest) {
   try {
     const db = getDb();
-    // Ensure getAll uses parameterized queries internally
-    const grades = await db.grades.getAll();
+    const [grades, students, courses] = await Promise.all([
+      db.grades.getAll(),
+      db.students.getAll(),
+      db.courses.getAll(),
+    ]);
 
     if (!grades || grades.length === 0) {
       return NextResponse.json({ error: 'No grades found' }, { status: 404 });
     }
 
-    const csvHeaders = 'Student ID,Course ID,Grade\n';
-    const csvRows = grades.map((grade) => `${grade.studentId},${grade.courseId},${grade.grade}`).join('\n');
-    const csvContent = csvHeaders + csvRows;
+    const header = 'Student Name,Course Name,Grade,Score,Semester\n';
+    const rows = grades
+      .map((g) => {
+        const student = students.find((s) => s.id === g.student_id)?.name ?? '';
+        const course = courses.find((c) => c.id === g.course_id)?.name ?? '';
+        return `"${student}","${course}","${g.grade}",${g.score},"${g.semester}"`;
+      })
+      .join('\n');
 
-    return new NextResponse(csvContent, {
+    return new NextResponse(header + rows, {
       status: 200,
       headers: {
         'Content-Type': 'text/csv',
@@ -23,7 +31,6 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    // Log the error appropriately in a real-world scenario
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
