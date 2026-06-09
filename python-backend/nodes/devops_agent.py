@@ -1,6 +1,5 @@
 import asyncio
 import pathlib
-import re
 import subprocess
 
 from langchain_openai import ChatOpenAI
@@ -109,8 +108,6 @@ async def devops_agent_node(state: AgentState) -> AgentState:
 
     key = ticket["key"]
     summary = ticket.get("fields", {}).get("summary", key)
-    slug = re.sub(r"[^a-z0-9]+", "-", summary.lower()).strip("-")[:40]
-    branch_name = f"feature/{key}-{slug}"
     commit_msg = f"feat({key}): {summary}"
 
     # ── STEP 1: Write files to disk ──────────────────────────────────
@@ -141,25 +138,26 @@ async def devops_agent_node(state: AgentState) -> AgentState:
         return {**state, "deploy_url": None, "error": f"Build failed: {build_errors[0]}",
                 "generated_files": generated_files}
     else:
-        print("  ✅ Build check PASSED — pushing to GitHub...")
+        print("  ✅ Build check PASSED — pushing to main...")
 
-    # ── STEP 3: Push to GitHub ────────────────────────────────────────
+    # ── STEP 3: Commit and push directly to main ──────────────────────
     try:
-        push_to_github(branch_name, commit_msg, generated_files)
-        print(f"  ✅ Pushed branch: {branch_name}")
+        push_to_github(commit_msg, generated_files)
+        print(f"  ✅ Pushed commit to main: {commit_msg[:60]}")
     except Exception as e:
         print(f"  ❌ GitHub push failed: {e}")
         await _close_safely(key, None, f"Deploy failed (git push): {e}", test_score)
         return {**state, "deploy_url": None, "error": str(e)}
 
-    # ── STEP 4: Vercel deploy ─────────────────────────────────────────
+    # ── STEP 4: Vercel deploys automatically from main push ───────────
     deploy_url: str | None = None
     try:
-        deploy_url = await trigger_deploy(branch_name)
-        print(f"  ✅ Deploy live: {deploy_url}")
-    except Exception as e:
-        print(f"  ❌ Vercel deploy failed: {e}")
+        await asyncio.sleep(3)  # give Vercel a moment to pick up the push
         deploy_url = await get_latest_deploy_url()
+        if deploy_url:
+            print(f"  ✅ Vercel deploy triggered: {deploy_url}")
+    except Exception as e:
+        print(f"  ⚠️  Could not fetch Vercel URL: {e}")
 
     # ── STEP 5: Close Jira ticket ─────────────────────────────────────
     await _close_safely(key, deploy_url, None, test_score)

@@ -3,15 +3,17 @@ import pathlib
 import re
 import git as gitpython
 
+PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
 
-def push_to_github(branch_name: str, commit_msg: str, files: list[dict]) -> None:
+
+def push_to_github(commit_msg: str, files: list[dict]) -> None:
+    """Write files, commit to main, and push — no feature branches."""
     repo_url = os.environ["GITHUB_REPO_URL"]
     token = os.environ["GITHUB_TOKEN"]
-    project_root = pathlib.Path(__file__).parent.parent.parent
 
-    repo = gitpython.Repo(project_root)
+    repo = gitpython.Repo(PROJECT_ROOT)
 
-    # Discard tracked changes only (never removes untracked files/dirs)
+    # Discard any tracked dirty state (never removes untracked files/dirs)
     repo.git.checkout("-f")
 
     # Configure git identity
@@ -19,19 +21,13 @@ def push_to_github(branch_name: str, commit_msg: str, files: list[dict]) -> None
         cfg.set_value("user", "name", "SMS Agent")
         cfg.set_value("user", "email", "agent@sms.local")
 
-    # Ensure we're on main first
+    # Make sure we're on main and up to date
     repo.git.checkout("main")
     repo.git.pull("origin", "main", "--rebase")
 
-    # Delete local feature branch if exists, then recreate from main
-    local_branches = [b.name for b in repo.branches]
-    if branch_name in local_branches:
-        repo.git.branch("-D", branch_name)
-    repo.git.checkout("-b", branch_name)
-
     # Write generated files
     for f in files:
-        file_path = project_root / f["path"]
+        file_path = PROJECT_ROOT / f["path"]
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(f["content"], encoding="utf-8")
         print(f"  📝 Written: {f['path']}")
@@ -46,10 +42,9 @@ def push_to_github(branch_name: str, commit_msg: str, files: list[dict]) -> None
             return
         raise
 
-    # Build authenticated URL
+    # Build authenticated URL and push to main
     clean_url = re.sub(r"https?://", "", repo_url.rstrip("/"))
     authenticated_url = f"https://{token}@{clean_url}"
 
-    # Force-push with explicit refspec
-    print(f"  🌿 Pushing branch: {branch_name} → {branch_name}")
-    repo.git.execute(["git", "push", "--force", authenticated_url, f"{branch_name}:{branch_name}"])
+    print(f"  🌿 Pushing commit to main: {commit_msg[:60]}")
+    repo.git.execute(["git", "push", authenticated_url, "main:main"])
