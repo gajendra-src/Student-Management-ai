@@ -1,24 +1,19 @@
-import type { Metadata } from 'next';
+import { ReactNode } from 'react';
+import Footer from '@/components/Footer';
 import './globals.css';
-import Navbar from '@/components/Navbar';
-
-export const metadata: Metadata = {
-  title: 'Student Management System',
-  description: 'Autonomous AI-powered student management platform',
-};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 min-h-screen">
-        <Navbar />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <body className="flex flex-col min-h-screen">
+        <main className="flex-grow">
           {children}
         </main>
+        <Footer />
       </body>
     </html>
   );
