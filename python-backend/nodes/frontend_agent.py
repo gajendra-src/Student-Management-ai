@@ -25,6 +25,10 @@ RULES — MUST FOLLOW:
    NEVER nest <a> inside <Link>
 5. Images: use <Image> from 'next/image', never bare <img> tags
 6. Router: import from 'next/navigation' (not 'next/router')
+7. Tailwind CSS colours — ONLY use valid Tailwind classes:
+   CORRECT: bg-green-400, bg-green-500, bg-blue-500, bg-red-500, text-white
+   WRONG: bg-light-green, bg-dark-blue, bg-lightgreen — these do NOT exist in Tailwind
+   Full colour scale: 50,100,200,300,400,500,600,700,800,900 (e.g. bg-green-300 = light green)
 7. FORBIDDEN imports — these do not exist:
    - '@/lib/api'
    - '@/lib/csvParser'
