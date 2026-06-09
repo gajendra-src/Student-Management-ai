@@ -7,23 +7,15 @@ const Navbar = () => {
   const router = useRouter();
 
   return (
-    <nav className="bg-indigo-600 p-4">
+    <nav className="bg-teal-600 p-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-white text-lg font-bold">
-          <Link href="/" className="hover:text-indigo-300">
-            Home
-          </Link>
+          <Link href="/" className="hover:text-teal-300">Home</Link>
         </div>
-        <div className="space-x-4">
-          <Link href="/students" className="text-white hover:text-indigo-300">
-            Students
-          </Link>
-          <Link href="/courses" className="text-white hover:text-indigo-300">
-            Courses
-          </Link>
-          <Link href="/grades" className="text-white hover:text-indigo-300">
-            Grades
-          </Link>
+        <div className="flex space-x-4">
+          <Link href="/students" className="text-white hover:text-teal-300">Students</Link>
+          <Link href="/courses" className="text-white hover:text-teal-300">Courses</Link>
+          <Link href="/grades" className="text-white hover:text-teal-300">Grades</Link>
         </div>
       </div>
     </nav>
