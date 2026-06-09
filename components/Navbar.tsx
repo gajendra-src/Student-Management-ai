@@ -1,19 +1,32 @@
-import Link from 'next/link'
+import Link from 'next/link';
 
 const Navbar = () => {
   return (
-    <nav className="bg-green-400 p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-white text-lg font-bold">Student Management System</h1>
-        <div className="flex space-x-4">
-          <Link href="/students" className="text-white hover:underline">Students</Link>
-          <Link href="/courses" className="text-white hover:underline">Courses</Link>
-          <Link href="/grades" className="text-white hover:underline">Grades</Link>
-          <Link href="/attendance" className="text-white hover:underline">Attendance</Link>
-        </div>
-      </div>
+    <nav className="bg-blue-500 p-4">
+      <ul className="flex space-x-4">
+        <li>
+          <Link href="/" className="text-white">
+            Home
+          </Link>
+        </li>
+        <li>
+          <Link href="/students" className="text-white">
+            Students
+          </Link>
+        </li>
+        <li>
+          <Link href="/courses" className="text-white">
+            Courses
+          </Link>
+        </li>
+        <li>
+          <Link href="/reports" className="text-white">
+            Reports
+          </Link>
+        </li>
+      </ul>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
