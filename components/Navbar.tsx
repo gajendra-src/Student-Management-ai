@@ -1,30 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const Navbar = () => {
-  const router = useRouter();
-
   return (
-    <nav className="bg-orange-300 p-4">
-      <ul className="flex space-x-4">
-        <li>
-          <Link href="/" className="text-white">
-            Home
-          </Link>
-        </li>
-        <li>
+    <nav className="bg-blue-800 p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link href="/" className="text-white text-lg font-bold">
+          <Image src="/logo.png" alt="Logo" width={50} height={50} />
+          MyApp
+        </Link>
+        <div className="flex space-x-4">
           <Link href="/about" className="text-white">
             About
           </Link>
-        </li>
-        <li>
+          <Link href="/courses" className="text-white">
+            Courses
+          </Link>
           <Link href="/contact" className="text-white">
             Contact
           </Link>
-        </li>
-      </ul>
+        </div>
+      </div>
     </nav>
   );
 };
