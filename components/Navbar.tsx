@@ -1,32 +1,33 @@
-import Link from 'next/link';
+'use client'
+
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 const Navbar = () => {
+  const router = useRouter()
+
   return (
-    <nav className="bg-blue-500 p-4">
-      <ul className="flex space-x-4">
-        <li>
-          <Link href="/" className="text-white">
+    <nav className="bg-purple-600 text-white p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <div className="text-lg font-bold">
+          <Link href="/" className="hover:text-gray-300">
             Home
           </Link>
-        </li>
-        <li>
-          <Link href="/students" className="text-white">
+        </div>
+        <div className="space-x-4">
+          <Link href="/students" className="hover:text-gray-300">
             Students
           </Link>
-        </li>
-        <li>
-          <Link href="/courses" className="text-white">
+          <Link href="/courses" className="hover:text-gray-300">
             Courses
           </Link>
-        </li>
-        <li>
-          <Link href="/reports" className="text-white">
-            Reports
+          <Link href="/grades" className="hover:text-gray-300">
+            Grades
           </Link>
-        </li>
-      </ul>
+        </div>
+      </div>
     </nav>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
