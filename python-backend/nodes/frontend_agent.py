@@ -41,7 +41,10 @@ RULES — MUST FOLLOW:
    - `import {{ getDb }} from '@/lib/db'` — server components only
    - `import {{ attendanceStore }} from '@/lib/attendance'` — for attendance data
    - Tailwind CSS classes for all styling
-9. Return ONLY the file content — no markdown code blocks, no explanations
+9. Server pages that call getDb() or attendanceStore MUST start with:
+   export const dynamic = 'force-dynamic';
+   This prevents Vercel build failures (prerender error during next build)
+10. Return ONLY the file content — no markdown code blocks, no explanations
 
 Project data model:
 - Student: {{ id, name, email, age, created_at }}
