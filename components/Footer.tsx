@@ -1,24 +1,13 @@
-import Link from 'next/link'
+import React from 'react';
 
-const Footer = () => {
+const Footer: React.FC = () => {
   return (
-    <footer className="bg-gray-800 text-white py-6">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="flex items-center">
-          <span className="text-lg font-semibold">Student Management System</span>
-        </div>
-        <nav className="flex space-x-4">
-          <Link href="/" className="hover:underline">Home</Link>
-          <Link href="/students" className="hover:underline">Students</Link>
-          <Link href="/courses" className="hover:underline">Courses</Link>
-          <Link href="/grades" className="hover:underline">Grades</Link>
-        </nav>
-        <div className="text-sm">
-          &copy; {new Date().getFullYear()} Student Management System. All rights reserved.
-        </div>
+    <footer className="bg-blue-500 text-white py-4">
+      <div className="container mx-auto text-center">
+        <p>&copy; {new Date().getFullYear()} My Company. All rights reserved.</p>
       </div>
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

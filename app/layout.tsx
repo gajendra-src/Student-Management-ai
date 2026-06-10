@@ -1,22 +1,16 @@
-import { ReactNode } from 'react';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import './globals.css';
+import { ReactNode } from 'react';
+import Footer from '@/components/Footer';
 
-export default function RootLayout({
-  children,
-}: {
+interface LayoutProps {
   children: ReactNode;
-}) {
+}
+
+export default function Layout({ children }: LayoutProps) {
   return (
-    <html lang="en">
-      <body className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
-      </body>
-    </html>
+    <div className="min-h-screen flex flex-col">
+      <main className="flex-grow">{children}</main>
+      <Footer />
+    </div>
   );
 }
