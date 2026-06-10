@@ -18,7 +18,11 @@ FRONTEND_PROMPT = """You are an expert Next.js 14 developer. Generate production
 RULES — MUST FOLLOW:
 1. Use 'use client' ONLY for components that use hooks (useState, useEffect, useRouter, etc.)
    Server components and pages that just fetch data do NOT need 'use client'
-2. CSS import in layout: use './globals.css' (relative), never '@/styles/globals.css'
+2. app/layout.tsx — IF you generate this file, you MUST include:
+   - <html lang="en"><body>...</body></html> wrapper (required by Next.js — without it the page is blank)
+   - import Navbar from '@/components/Navbar' and <Navbar /> before <main>
+   - import Footer from '@/components/Footer' and <Footer /> after </main>
+   - CSS import: use './globals.css' (relative), never '@/styles/globals.css'
 3. DataTable import: `import DataTable from '@/components/DataTable'`
    columns type: Array<{ key: string; label: string; render?: (value: any, row: any) => React.ReactNode }>
    NOT plain strings — always objects with key and label
