@@ -1,29 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
-const Navbar: React.FC = () => {
-  const router = useRouter();
-
+const Navbar = () => {
   return (
-    <nav className="bg-emerald-600 p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link href="/" className="text-white text-lg font-semibold">
-          Home
-        </Link>
-        <div className="flex space-x-4">
-          <Link href="/students" className="text-white">
-            Students
+    <nav className="bg-red-500 p-4">
+      <ul className="flex space-x-4">
+        <li>
+          <Link href="/" className="text-white">
+            Home
           </Link>
-          <Link href="/courses" className="text-white">
-            Courses
+        </li>
+        <li>
+          <Link href="/about" className="text-white">
+            About
           </Link>
-          <Link href="/grades" className="text-white">
-            Grades
+        </li>
+        <li>
+          <Link href="/contact" className="text-white">
+            Contact
           </Link>
-        </div>
-      </div>
+        </li>
+      </ul>
     </nav>
   );
 };
