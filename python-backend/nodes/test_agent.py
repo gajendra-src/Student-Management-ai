@@ -38,6 +38,7 @@ Check for:
 2. Nested <a> inside <Link> (wrong in Next.js 13+)
 3. <img> tags instead of <Image> from next/image
 4. camelCase field names (studentId, courseId) instead of snake_case (student_id, course_id)
+5. Wrong Student fields: Student has phone/address/enrollment_date, NOT age
 5. Non-existent imports (@/lib/api, @/lib/csvParser, @/components/Button, date-fns, @heroicons/react)
 6. db.escape() calls (db has no escape method)
 7. useRouter from 'next/router' (should be 'next/navigation')

@@ -68,6 +68,8 @@ CRITICAL RULES:
 - Link children: <Link href="..." className="...">Text</Link> — no nested <a> tags
 - Images: <Image> from 'next/image', never bare <img>
 - snake_case fields: student_id, course_id (never studentId, courseId)
+- Student fields: phone, address, enrollment_date (NOT age)
+- Course fields: code, instructor (NOT just name/description)
 - Forbidden imports: @/lib/api, @/lib/csvParser, @/components/Button, date-fns, @heroicons/react
 - db has NO .escape() method
 

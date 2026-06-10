@@ -18,8 +18,8 @@ BACKEND_PROMPT = """You are an expert Next.js 14 API route developer. Generate p
 RULES — MUST FOLLOW:
 1. Always import getDb: `import { getDb } from '@/lib/db'`
 2. EXACT data model — snake_case ONLY:
-   - Student: { id: string, name: string, email: string, age: number, created_at: string }
-   - Course: { id: string, name: string, description: string, credits: number, created_at: string }
+   - Student: { id: string, name: string, email: string, phone: string, address: string, enrollment_date: string, created_at: string }
+   - Course: { id: string, code: string, name: string, description: string, credits: number, instructor: string, created_at: string }
    - Grade: { id: string, student_id: string, course_id: string, grade: string, score: number, semester: string, created_at: string }
    CRITICAL: student_id (NOT studentId), course_id (NOT courseId) — camelCase is WRONG
 3. db.grades.create() requires: { student_id, course_id, grade, score, semester }

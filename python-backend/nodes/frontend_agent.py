@@ -48,8 +48,8 @@ RULES — MUST FOLLOW:
 11. Return ONLY the file content — no markdown code blocks, no explanations
 
 Project data model:
-- Student: { id, name, email, age, created_at }
-- Course: { id, name, description, credits, created_at }
+- Student: { id, name, email, phone, address, enrollment_date, created_at }
+- Course: { id, code, name, description, credits, instructor, created_at }
 - Grade: { id, student_id, course_id, grade, score, semester, created_at }
   CRITICAL: student_id (NOT studentId), course_id (NOT courseId)
 - getDb() returns: { students, courses, grades } — no other tables
